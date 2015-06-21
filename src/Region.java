@@ -86,7 +86,7 @@ public class Region {
     }
 
     public void addLabel(Integer label_id){
-        int label_count = this.label_histogram.get(label_id)+1;
+        int label_count = this.label_histogram.get(label_id);
 
         this.label_histogram.replace(label_id, label_count+1);
     }
