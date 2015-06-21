@@ -146,9 +146,16 @@ public class RegionMatrix {
 
     }
 
-    public static void test (double array []){
+    public static double[] generateEnhancedY (Region r, int arrayLength ){
 
+        double[] enhancedY = new double[arrayLength];
+        for(int i = 0; i < r.feature.size() ; i++){
+                enhancedY[i] =  (Double)r.feature.get(i);
+        }
+
+        return enhancedY;
     }
+
 
     public static void main(String args[]){
         List test = new ArrayList();

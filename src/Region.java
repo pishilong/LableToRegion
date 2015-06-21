@@ -74,6 +74,31 @@ public class Region {
         return label_id;
     }
 
+    public void labelPropagation(List <Region> contributors){
+        for (Integer label_id : this.label_histogram.keySet()){
+            for (Region contributor : contributors){
+                if (isCommon(label_id, contributor)){
+                    this.addLabel(label_id);
+                    contributor.addLabel(label_id);
+                }
+            }
+        }
+    }
+
+    public void addLabel(Integer label_id){
+        int label_count = this.label_histogram.get(label_id)+1;
+
+        this.label_histogram.replace(label_id, label_count+1);
+    }
+
+    public boolean isContained(Integer label_id){
+        return (this.label_histogram.get(label_id) > 0 );
+    }
+
+    public boolean isCommon(Integer label_id, Region another){
+        return (this.isContained(label_id) && another.isContained(label_id));
+    }
+
 
 
 
