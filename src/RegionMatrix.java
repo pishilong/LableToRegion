@@ -66,7 +66,7 @@ public class RegionMatrix {
 
     }
 
-    public static void generateEnhancedA(List<Region> remainingRegions){
+    public static double[][] generateEnhancedA(List<Region> remainingRegions){
 
 
         // remaining region count
@@ -140,6 +140,9 @@ public class RegionMatrix {
         }
         // at this moment, columnID should be the last column index of the Matrix
         columnID = columnID+id_nextN;
+
+        return enhancedA;
+
 
     }
 
