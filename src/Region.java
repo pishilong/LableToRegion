@@ -15,7 +15,7 @@ public class Region {
     int label_id;
 
     /*feature histogram*/
-    List feature = new ArrayList<Double>();
+    List<Double> feature = new ArrayList<Double>();
 
     /*Label Histogram, structure <label_id, counter>, used for label propagation phase*/
     Map <Integer, Integer> label_histogram = new HashMap<Integer, Integer>();
@@ -88,7 +88,7 @@ public class Region {
     public void addLabel(Integer label_id){
         int label_count = this.label_histogram.get(label_id);
 
-        this.label_histogram.replace(label_id, label_count+1);
+        this.label_histogram.put(label_id, label_count+1);
     }
 
     public boolean isContained(Integer label_id){
