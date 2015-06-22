@@ -18,13 +18,16 @@ public class RegionMatrix {
         String projectDirName = System.getProperty("user.dir");
 
         String maskDirName =  projectDirName + "/mask";
-        List <Region> regions = Region.parseMaskFile(maskDirName);
+        String featureDirName = projectDirName + "/histogram";
+        List <Region> regions = Region.parseMaskAndFeature(maskDirName, featureDirName);
 
         String labelFileName = projectDirName + "/imageLabels.txt";
-
         Region.importImageLable(labelFileName, regions);
 
-        Region.importFeature("feature-histogram-file", regions);
+        /*
+        String featureDirName = projectDirName + "/histogram";
+        Region.importFeature(featureDirName, regions);
+        */
         matrix.addAll(regions);
 
     }

@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -34,10 +35,14 @@ public class Region {
         this.weightInImage = weightInImage;
     }
 
+    public void setFeature(List<Double> feature) {
+        this.feature = feature;
+    }
+
     /*parse image mask file, to generate Regions of that image
-      populate regions with imageId, regionId, weighInImage,
-      those can be obtained from mask file */
-    public static List<Region> parseMaskFile(String maskDirName) throws Exception{
+          populate regions with imageId, regionId, weighInImage,
+          those can be obtained from mask file */
+    public static List<Region> parseMaskAndFeature(String maskDirName, String featureDirName) throws Exception{
         System.out.println("Start to parse mask directory......");
         List <Region> regions = new ArrayList<Region>();
 
@@ -70,7 +75,10 @@ public class Region {
 
         for (File file: filelist) {
             int imageID = Integer.parseInt(file.getName().split("\\.")[0]);
-            System.out.println("Parsing " + imageID + ".mask .....");
+            File featureFile = new File(featureDirName + "/" + imageID + ".his");
+            HashMap<Integer, List<Double>> featureMap = importFeature(featureFile);
+
+            System.out.println("Parsing image " + imageID + ".....");
             List<String[]> fileContent = new ArrayList<String[]>();
             HashMap<Integer, Integer> regionStatic = new HashMap<Integer, Integer>();
             int rowNumber = 0;
@@ -104,18 +112,37 @@ public class Region {
 
             for (Map.Entry<Integer, Integer> entry : regionStatic.entrySet()) {
                 double weight = (double)entry.getValue() / (double) imageSize;
-                Region region = new Region(imageID, entry.getKey(), weight);
+                int regionID = entry.getKey();
+                Region region = new Region(imageID, regionID, weight);
+                region.setFeature(featureMap.get(regionID));
                 regions.add(region);
             }
         }
-        System.out.println("Finished to parse mask files");
+        System.out.println("Finished to parse mask and feature files");
         return regions;
     }
 
     /*parse feature histogram file, populate feature according to the file*/
-    public static void importFeature (String featureFile,  List<Region> regions){
+    public static HashMap<Integer, List<Double>> importFeature (File featureFile) throws Exception{
+        HashMap<Integer, List<Double>> featureMap = new HashMap<Integer, List<Double>>();
+        FileInputStream is = new FileInputStream(featureFile);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
 
-
+        try {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                List<Double> featureVector = new ArrayList<Double>();
+                ArrayList<String> regionInfo = new ArrayList<>(Arrays.asList(line.split(" ")));
+                int regionID = Integer.parseInt(regionInfo.remove(0));
+                for (String feature: regionInfo){
+                    featureVector.add(Double.parseDouble(feature));
+                }
+                featureMap.put(regionID, featureVector);
+            }
+        } finally {
+            bufferedReader.close();
+        }
+        return featureMap;
     }
 
     /*parse image label file, populate initial label histogram of each regions in the image*/
@@ -123,8 +150,8 @@ public class Region {
         System.out.println("Start to import image label as init region label histogram....");
         File imageLableFile = new File(labelFile);
 
-        FileInputStream is = new FileInputStream(imageLableFile);
         int imageID = 0;
+        FileInputStream is = new FileInputStream(imageLableFile);
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
         try {
             String line;
@@ -209,7 +236,8 @@ public class Region {
         String projectDirName = System.getProperty("user.dir");
 
         String maskDirName =  projectDirName + "/mask";
-        List<Region> regions = parseMaskFile(maskDirName);
+        String featureDirName = projectDirName + "/histogram";
+        List<Region> regions = parseMaskAndFeature(maskDirName, featureDirName);
         String labelFileName = projectDirName + "/imageLabels.txt";
         importImageLable(labelFileName, regions);
     }
