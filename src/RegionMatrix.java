@@ -1,6 +1,8 @@
 
 
 
+import com.mathworks.toolbox.javabuilder.MWException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -20,12 +22,21 @@ public class RegionMatrix {
         matrix.addAll(regions);
 
     }
-    public static void analyzeLabelToRegion()    {
+    public static void analyzeLabelToRegion() throws MWException {
 
         int regionTotalCount = matrix.size();
+
+        //  since we keep image/region order in matrix, so the image-id of last region is leveraged to get image count.
+        int imageTotalCount =  matrix.get(matrix.size()-1).getImage_id();
+
+        int featureDemCount = matrix.get(matrix.size()-1).feature.size();
+
         List <Region>remainingRegions = new ArrayList<Region>();
         // loop to rebuild each region
         for (int j = 0; j< regionTotalCount; j++){
+            log("re-construct region_id:" +j);
+            Region reconstructedRegion = matrix.get(j);
+
             // re-use List of Remaining Regions
             remainingRegions.clear();
 
@@ -34,7 +45,35 @@ public class RegionMatrix {
                     remainingRegions.add(matrix.get(i));
                 }
             }
+
+            double [][] enhancedA = generateEnhancedA(remainingRegions);
+            double [] enhancedY = generateEnhancedY(reconstructedRegion, imageTotalCount+featureDemCount);
+            log("enhanced A :");
+            ArrayUtil.print2DArray(enhancedA);
+            log("enhanced Y :");
+            ArrayUtil.printArray(enhancedY);
+
+            double [] solutionX = L1Fun.calcL1(enhancedA,enhancedY);
+            List regionContributors = getContributorList(solutionX,remainingRegions);
+            reconstructedRegion.labelPropagation(regionContributors);
+
+
+
+
         }
+    }
+
+    public static List<Region> getContributorList ( double [] solutionX, List<Region> candidateRegions ){
+
+        int regionCount = candidateRegions.size();
+        List<Region> contributors = new ArrayList<Region>();
+
+        for(int i = 0; i < regionCount; i++){
+            if(solutionX[i] != 0){
+                contributors.add(candidateRegions.get(i));
+            }
+        }
+        return contributors;
 
     }
 
@@ -165,10 +204,9 @@ public class RegionMatrix {
 
     public static void main(String args[]){
 
-
-        testY();
-
-        testA();
+//        testY();
+//        testA();
+//        testLabelPropagation();
 
     }
 
@@ -191,32 +229,92 @@ public class RegionMatrix {
         }
     }
 
+    public static void initalLabel(Region r, int [] labels){
+        for(int i = -1; i<= 7; i++){
+            r.label_histogram.put(i,0);
+        }
+        for(int labelId : labels){
+            r.label_histogram.put(labelId,1);
+        }
 
+    }
 
     public static void testA(){
 
+        List<Region> list = testMatrix();
+        double[][] testA_matrix = generateEnhancedA(list);
+        ArrayUtil.print2DArray(testA_matrix);
+    }
+
+    public static List<Region> testMatrix(){
         List<Region> list = new ArrayList<Region>();
 
         Region r1 = new Region(1, 0, 0.35);
         randomFeature(r1.feature,100);
+        int[] l1= {1, 3, 5};
+        initalLabel(r1,l1);
+
         Region r2 = new Region(1, 1, 0.55);
+        int[] l2= { 4, 7};
+        initalLabel(r2,l2);
         randomFeature(r2.feature,100);
+
+
         Region r3 = new Region(1, 2, 0.10);
+        int[] l3= { 3, 7};
+        initalLabel(r3,l3);
         randomFeature(r3.feature,100);
+
         Region r4 = new Region(2, 0, 0.40);
+        int[] l4= {1, 4, 7};
+        initalLabel(r4,l4);
         randomFeature(r4.feature,100);
-        Region r5 = new Region(2, 1, 0.60);
-        randomFeature(r5.feature,100);
+
+//        Region r5 = new Region(2, 1, 0.60);
+//        int[] l1= {1, 3, 5};
+//        initalLabel(r1,l1);
+//        randomFeature(r5.feature,100);
 
         list.add(r1);
         list.add(r2);
         list.add(r3);
         list.add(r4);
-        list.add(r5);
+//        list.add(r5);
 
-        double[][] testA_matrix = generateEnhancedA(list);
-        ArrayUtil.print2DArray(testA_matrix);
+        return list;
 
+    }
+
+    public static void testProcess(){
+
+        matrix = testMatrix();
+        try {
+            analyzeLabelToRegion();
+        } catch (MWException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void testLabelPropagation(){
+        Region r5 = new Region(2, 1, 0.60);
+        int[] l1= {1, 3, 5};
+        initalLabel(r5,l1);
+        randomFeature(r5.feature,100);
+
+        List <Region> list = testMatrix();
+        double[] resolutionX =new double[5+100+2];
+        resolutionX[2] = 0.8;
+        resolutionX[3] = 1.3;
+
+        List<Region> contributor = getContributorList(resolutionX, list);
+
+        for(Region r: contributor){
+            log("Contributor, image - "+r.getImage_id() +" region -" +r.getRegion_id());
+        }
+
+        r5.labelPropagation(contributor);
+
+        log("Great Job");
 
 
     }
