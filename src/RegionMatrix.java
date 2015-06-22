@@ -14,9 +14,10 @@ public class RegionMatrix {
 
     public static List <Region> matrix= new ArrayList<Region> ();
 
-    public static void setupMatrix(){
+    public static void setupMatrix() throws Exception{
         /* loop each mask file, to generate region Matrix*/
-        List <Region> regions = Region.parseMaskFile("imageMask-file");
+        String maskDir = System.getProperty("user.dir") + "/mask";
+        List <Region> regions = Region.parseMaskFile(maskDir);
         Region.importImageLable("imageLabel-file", regions);
         Region.importFeature("feature-histogram-file", regions);
         matrix.addAll(regions);
