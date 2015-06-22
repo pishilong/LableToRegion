@@ -9,33 +9,33 @@ import java.util.*;
  */
 public class Region {
 
-    int image_id;
-    int region_id;
+    int imageId;
+    int regionId;
 
     /* weight: region size percentage in image */
     double weightInImage;
 
     /* final label ID, after label selection using label histogram*/
-    int label_id;
+    int labelId;
 
     /*feature histogram*/
     List<Double> feature = new ArrayList<Double>();
 
-    /*Label Histogram, structure <label_id, counter>, used for label propagation phase*/
-    Map <Integer, Integer> label_histogram = new HashMap<Integer, Integer>();
+    /*Label Histogram, structure <labelId, counter>, used for label propagation phase*/
+    Map <Integer, Integer> labelHistogram = new HashMap<Integer, Integer>();
 
 
     public Region(){
     }
 
     public Region (int image_id, int region_id, double weightInImage){
-        this.image_id = image_id;
-        this.region_id = region_id;
+        this.imageId = image_id;
+        this.regionId = region_id;
         this.weightInImage = weightInImage;
     }
 
     /*parse image mask file, to generate Regions of that image
-      populate regions with image_id, region_id, weighInImage,
+      populate regions with imageId, regionId, weighInImage,
       those can be obtained from mask file */
     public static List<Region> parseMaskFile(String maskDirName) throws Exception{
         System.out.println("Start to parse mask directory......");
@@ -108,6 +108,7 @@ public class Region {
                 regions.add(region);
             }
         }
+        System.out.println("Finished to parse mask files");
         return regions;
     }
 
@@ -118,30 +119,64 @@ public class Region {
     }
 
     /*parse image label file, populate initial label histogram of each regions in the image*/
-    public static void importImageLable(String labelFile,  List<Region> regions){
+    public static void importImageLable(String labelFile,  List<Region> regions) throws Exception{
+        System.out.println("Start to import image label as init region label histogram....");
+        File imageLableFile = new File(labelFile);
 
+        FileInputStream is = new FileInputStream(imageLableFile);
+        int imageID = 0;
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+        try {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                imageID ++;
+                System.out.println("Processing image " + imageID + "'s label....." );
+                Map <Integer, Integer> labelHistogram = new HashMap<Integer, Integer>();
+                String[] labels = line.split(" ");
+                for (String labelID : labels){
+                    labelHistogram.put(Integer.parseInt(labelID), 1);
+                }
+                for(int i = -1; i < 8; i ++){
+                    if (labelHistogram.get(i) == null) {
+                        labelHistogram.put(i, 0);
+                    }
+                }
+                for (Region region: regions) {
+                    if (region.getImageId() == imageID) {
+                        region.setLabelHistogram(labelHistogram);
+                    }
+                }
+            }
+        } finally {
+            bufferedReader.close();
+        }
+        System.out.println("Finished to import image label histogram.");
 
     }
 
 
-    public int getImage_id() {
-        return image_id;
+    public int getImageId() {
+        return imageId;
     }
 
-    public int getRegion_id() {
-        return region_id;
+    public int getRegionId() {
+        return regionId;
     }
 
     public double getWeightInImage() {
         return weightInImage;
     }
 
-    public int getLabel_id() {
-        return label_id;
+    public int getLabelId() {
+        return labelId;
+    }
+
+    public void setLabelHistogram(Map<Integer, Integer> labelHistogram) {
+        this.labelHistogram = labelHistogram;
     }
 
     public void labelPropagation(List <Region> contributors){
-        for (Integer label_id : this.label_histogram.keySet()){
+        for (Integer label_id : this.labelHistogram.keySet()){
             for (Region contributor : contributors){
                 if (isCommonLabel(label_id, contributor)){
                     this.addLabel(label_id);
@@ -152,13 +187,13 @@ public class Region {
     }
 
     public void addLabel(Integer label_id){
-        int label_count = this.label_histogram.get(label_id);
+        int label_count = this.labelHistogram.get(label_id);
 
-        this.label_histogram.put(label_id, label_count+1);
+        this.labelHistogram.put(label_id, label_count + 1);
     }
 
     public boolean isLabelContained(Integer label_id){
-        return (this.label_histogram.get(label_id) > 0 );
+        return (this.labelHistogram.get(label_id) > 0 );
     }
 
     public boolean isCommonLabel(Integer label_id, Region another){
@@ -170,9 +205,13 @@ public class Region {
 
     public static void main(String args[]) throws Exception{
         //Region r1 =  new Region(1, 4, 0.3);
-        //System.out.println(r1.image_id);
-        String maskDir = System.getProperty("user.dir") + "/mask";
-        parseMaskFile(maskDir);
+        //System.out.println(r1.imageId);
+        String projectDirName = System.getProperty("user.dir");
+
+        String maskDirName =  projectDirName + "/mask";
+        List<Region> regions = parseMaskFile(maskDirName);
+        String labelFileName = projectDirName + "/imageLabels.txt";
+        importImageLable(labelFileName, regions);
     }
 
 }

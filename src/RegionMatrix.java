@@ -15,10 +15,15 @@ public class RegionMatrix {
     public static List <Region> matrix= new ArrayList<Region> ();
 
     public static void setupMatrix() throws Exception{
-        /* loop each mask file, to generate region Matrix*/
-        String maskDir = System.getProperty("user.dir") + "/mask";
-        List <Region> regions = Region.parseMaskFile(maskDir);
-        Region.importImageLable("imageLabel-file", regions);
+        String projectDirName = System.getProperty("user.dir");
+
+        String maskDirName =  projectDirName + "/mask";
+        List <Region> regions = Region.parseMaskFile(maskDirName);
+
+        String labelFileName = projectDirName + "/imageLabels.txt";
+
+        Region.importImageLable(labelFileName, regions);
+
         Region.importFeature("feature-histogram-file", regions);
         matrix.addAll(regions);
 
@@ -28,14 +33,14 @@ public class RegionMatrix {
         int regionTotalCount = matrix.size();
 
         //  since we keep image/region order in matrix, so the image-id of last region is leveraged to get image count.
-        int imageTotalCount =  matrix.get(matrix.size()-1).getImage_id();
+        int imageTotalCount =  matrix.get(matrix.size()-1).getImageId();
 
         int featureDemCount = matrix.get(matrix.size()-1).feature.size();
 
         List <Region>remainingRegions = new ArrayList<Region>();
         // loop to rebuild each region
         for (int j = 0; j< regionTotalCount; j++){
-            log("re-construct region_id:" +j);
+            log("re-construct regionId:" +j);
             Region reconstructedRegion = matrix.get(j);
 
             // re-use List of Remaining Regions
@@ -89,7 +94,7 @@ public class RegionMatrix {
         int featureDemCount = remainingRegions.get(0).feature.size();
         log("featureDemCount :"+featureDemCount);
         // image count - since we keep image/region order in matrix, so the image-id of last region is leveraged.
-        int image_count =  remainingRegions.get(remainingRegions.size()-1).getImage_id();
+        int image_count =  remainingRegions.get(remainingRegions.size()-1).getImageId();
         log("image_count :"+image_count);
 
         //array structure: (K+N, R+K+N)
@@ -106,8 +111,8 @@ public class RegionMatrix {
             log("column id :"+columnID);
             // get empty column data
             Region eachRegion = remainingRegions.get(columnID);
-            log("region image_id :"+eachRegion.image_id);
-            log("region region_id :"+eachRegion.region_id);
+            log("region imageId :"+eachRegion.imageId);
+            log("region regionId :"+eachRegion.regionId);
             log("region weight :"+eachRegion.weightInImage);
 
             double [] columnData = ArrayUtil.getColumnFrom2DArray(enhancedA, columnID);
@@ -122,7 +127,7 @@ public class RegionMatrix {
 
             // setup weight array
             double weightArray [] =  new double [image_count];
-            weightArray[eachRegion.image_id-1] = eachRegion.weightInImage;
+            weightArray[eachRegion.imageId -1] = eachRegion.weightInImage;
             log("weight part columndata : ");
             ArrayUtil.printArray(weightArray);
 
@@ -232,10 +237,10 @@ public class RegionMatrix {
 
     public static void initalLabel(Region r, int [] labels){
         for(int i = -1; i<= 7; i++){
-            r.label_histogram.put(i,0);
+            r.labelHistogram.put(i,0);
         }
         for(int labelId : labels){
-            r.label_histogram.put(labelId,1);
+            r.labelHistogram.put(labelId,1);
         }
 
     }
@@ -310,7 +315,7 @@ public class RegionMatrix {
         List<Region> contributor = getContributorList(resolutionX, list);
 
         for(Region r: contributor){
-            log("Contributor, image - "+r.getImage_id() +" region -" +r.getRegion_id());
+            log("Contributor, image - "+r.getImageId() +" region -" +r.getRegionId());
         }
 
         r5.labelPropagation(contributor);
