@@ -55,16 +55,6 @@ public class ArrayUtil {
 
 
     public static void main(String args[]){
-        double testmatrix [][] = {{2,3,4,5},{13,423,23,23},{4,8,12,24}};
-        System.out.println(testmatrix.length);
 
-        ArrayUtil.print2DArray(testmatrix);
-
-        double column[] = {100,200};
-        ArrayUtil.populate2DArrayByColumn(testmatrix, 2, 1, column);
-
-        ArrayUtil.print2DArray(testmatrix);
-
-        ArrayUtil.printArray(ArrayUtil.getColumnFrom2DArray(testmatrix, 2));
     }
 }

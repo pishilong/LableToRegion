@@ -3,7 +3,9 @@
 
 import com.mathworks.toolbox.javabuilder.MWException;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -36,7 +38,7 @@ public class RegionMatrix {
         int regionTotalCount = matrix.size();
 
         //  since we keep image/region order in matrix, so the image-id of last region is leveraged to get image count.
-        int imageTotalCount =  matrix.get(matrix.size()-1).getImageId();
+        int imageTotalCount = matrix.get(matrix.size()-1).getImageId();
 
         int featureDemCount = matrix.get(matrix.size()-1).feature.size();
 
@@ -57,19 +59,29 @@ public class RegionMatrix {
 
             double [][] enhancedA = generateEnhancedA(remainingRegions);
             double [] enhancedY = generateEnhancedY(reconstructedRegion, imageTotalCount+featureDemCount);
-            log("enhanced A :");
-            ArrayUtil.print2DArray(enhancedA);
-            log("enhanced Y :");
-            ArrayUtil.printArray(enhancedY);
+//            log("enhanced A :");
+//            ArrayUtil.print2DArray(enhancedA);
+//            log("enhanced Y :");
+//            ArrayUtil.printArray(enhancedY);
 
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            log("start - solve matrix eq" + df.format(new Date()));
             double [] solutionX = L1Fun.calcL1(enhancedA,enhancedY);
+            log("end - solve matrix eq" + df.format(new Date()));
+
+            ArrayUtil.printArray(solutionX);
             List regionContributors = getContributorList(solutionX,remainingRegions);
             reconstructedRegion.labelPropagation(regionContributors);
-
-
-
-
         }
+
+        for(Region r : matrix){
+            r.selectLabel();
+        }
+    }
+
+    public static void generateReport(){
+        log("generate report");
     }
 
     public static List<Region> getContributorList ( double [] solutionX, List<Region> candidateRegions ){
@@ -119,20 +131,20 @@ public class RegionMatrix {
             log("region weight :"+eachRegion.weightInImage);
 
             double [] columnData = ArrayUtil.getColumnFrom2DArray(enhancedA, columnID);
-            log("initial columndata : ");
-            ArrayUtil.printArray(columnData);
+//            log("initial columndata : ");
+//            ArrayUtil.printArray(columnData);
 
             // setup feature array
             Double featureArray [] =new Double [featureDemCount] ;
             eachRegion.feature.toArray(featureArray);
-            log("feature part columndata : ");
-            ArrayUtil.printArray(featureArray);
+//            log("feature part columndata : ");
+//            ArrayUtil.printArray(featureArray);
 
             // setup weight array
             double weightArray [] =  new double [image_count];
             weightArray[eachRegion.imageId -1] = eachRegion.weightInImage;
-            log("weight part columndata : ");
-            ArrayUtil.printArray(weightArray);
+//            log("weight part columndata : ");
+//            ArrayUtil.printArray(weightArray);
 
             // load feature & weight into the column data
             for (int i=0, j=0, k=0; i < columnData.length; i++){
@@ -149,13 +161,13 @@ public class RegionMatrix {
                 }
 
             }
-            log("column data (A+B) :");
-            ArrayUtil.printArray(columnData);
+//            log("column data (A+B) :");
+//            ArrayUtil.printArray(columnData);
             ArrayUtil.populate2DArrayByColumn(enhancedA, columnID, columnData);
 
         }
         log("Finish generating first N Columns which is (A+B) format, enhancedA: ");
-        ArrayUtil.print2DArray(enhancedA);
+//        ArrayUtil.print2DArray(enhancedA);
 
         log("*** Generate next K (feature dimension count) columns which (1+0) format");
         // for next K (feature dimension count) columns
@@ -168,8 +180,8 @@ public class RegionMatrix {
                 columnData[i] = 1;
             }
 
-            log("column data (1 0)");
-            ArrayUtil.printArray(columnData);
+//            log("column data (1 0)");
+//            ArrayUtil.printArray(columnData);
             ArrayUtil.populate2DArrayByColumn(enhancedA, columnID, columnData);
 
         }
@@ -184,8 +196,8 @@ public class RegionMatrix {
             for (int i = featureDemCount; i<columnData.length; i++){
                 columnData[i] = -1;
             }
-            log("column data (0 -1)");
-            ArrayUtil.printArray(columnData);
+//            log("column data (0 -1)");
+//            ArrayUtil.printArray(columnData);
             ArrayUtil.populate2DArrayByColumn(enhancedA, columnID, columnData);
         }
         // at this moment, columnID should be the last column index of the Matrix
@@ -211,11 +223,15 @@ public class RegionMatrix {
     }
 
 
-    public static void main(String args[]){
+    public static void main(String args[]) throws Exception {
 
 //        testY();
 //        testA();
-//        testLabelPropagation();
+//          testLabelPropagation();
+
+        setupMatrix();
+        analyzeLabelToRegion();
+        generateReport();
 
     }
 
@@ -309,19 +325,21 @@ public class RegionMatrix {
         int[] l1= {1, 3, 5};
         initalLabel(r5,l1);
         randomFeature(r5.feature,100);
+        r5.addLabel(3);
+        r5.selectLabel();
 
-        List <Region> list = testMatrix();
-        double[] resolutionX =new double[5+100+2];
-        resolutionX[2] = 0.8;
-        resolutionX[3] = 1.3;
-
-        List<Region> contributor = getContributorList(resolutionX, list);
-
-        for(Region r: contributor){
-            log("Contributor, image - "+r.getImageId() +" region -" +r.getRegionId());
-        }
-
-        r5.labelPropagation(contributor);
+//        List <Region> list = testMatrix();
+//        double[] resolutionX =new double[5+100+2];
+//        resolutionX[2] = 0.8;
+//        resolutionX[3] = 1.3;
+//
+//        List<Region> contributor = getContributorList(resolutionX, list);
+//
+//        for(Region r: contributor){
+//            log("Contributor, image - "+r.getImageId() +" region -" +r.getRegionId());
+//        }
+//
+//        r5.labelPropagation(contributor);
 
         log("Great Job");
 

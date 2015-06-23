@@ -122,6 +122,8 @@ public class Region {
         return regions;
     }
 
+
+
     /*parse feature histogram file, populate feature according to the file*/
     public static HashMap<Integer, List<Double>> importFeature (File featureFile) throws Exception{
         HashMap<Integer, List<Double>> featureMap = new HashMap<Integer, List<Double>>();
@@ -132,7 +134,7 @@ public class Region {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 List<Double> featureVector = new ArrayList<Double>();
-                ArrayList<String> regionInfo = new ArrayList<>(Arrays.asList(line.split(" ")));
+                ArrayList<String> regionInfo = new ArrayList<String>(Arrays.asList(line.split(" ")));
                 int regionID = Integer.parseInt(regionInfo.remove(0));
                 for (String feature: regionInfo){
                     featureVector.add(Double.parseDouble(feature));
@@ -227,6 +229,21 @@ public class Region {
         return (this.isLabelContained(label_id) && another.isLabelContained(label_id));
     }
 
+    public void selectLabel(){
+        int max_count = 0;
+        int highest_rank_label=0;
+        for(int eachLabel : this.labelHistogram.keySet()){
+            if (this.labelHistogram.get(eachLabel) > max_count) {
+                max_count =this.labelHistogram.get(eachLabel);
+                highest_rank_label = eachLabel;
+            }
+        }
+
+        this.labelId = highest_rank_label;
+
+    }
+
+
 
 
 
@@ -240,6 +257,7 @@ public class Region {
         List<Region> regions = parseMaskAndFeature(maskDirName, featureDirName);
         String labelFileName = projectDirName + "/imageLabels.txt";
         importImageLable(labelFileName, regions);
+        RegionMatrix.log("hello");
     }
 
 }
