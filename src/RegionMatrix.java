@@ -3,6 +3,8 @@
 
 import com.mathworks.toolbox.javabuilder.MWException;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -232,7 +234,8 @@ public class RegionMatrix {
         setupMatrix();
         analyzeLabelToRegion();
         generateReport();
-
+		
+        //genEnhancedAYInBatch();
     }
 
 
@@ -345,6 +348,63 @@ public class RegionMatrix {
 
 
     }
+    
+	public static void saveMatrixToFile(String fileName, double[][]matrix) throws Exception{
+		File file = new File(fileName);  //存放数组数据的文件
+		if(!file.exists()) file.createNewFile();
+		 
+		FileWriter textWriter = new FileWriter(file);  //文件写入流
+ 
+		//将数组中的数据写入到文件中。每行各数据之间TAB间隔.
+		int m = matrix.length;
+		int n = matrix[0].length;
+		
+		log("matrix size: " + m + "*" + n);
+		
+		for(int i=0;i<m;i++){
+			String fileContent = "";
+			log("row:"+ i);
+			for(int j=0;j<n;j++){
+				fileContent += matrix[i][j]+" ";
+			}
+			fileContent += "\n";
+			textWriter.write(fileContent);
+		}
+		
+		textWriter.close();
+    }
+	
+    
+	/*
+	 * 
+	 * */
+//    public static void genEnhancedAYInBatch() throws Exception {
+//        int regionTotalCount = matrix.size();
+//
+//        //  since we keep image/region order in matrix, so the image-id of last region is leveraged to get image count.
+//        int imageTotalCount = matrix.get(matrix.size()-1).getImageId();
+//        int featureDemCount = matrix.get(matrix.size()-1).feature.size();
+//
+//        double [][] enhancedA = generateEnhancedA(matrix);
+//        double [][] enhancedYMatrix = new double[imageTotalCount+featureDemCount][regionTotalCount];
+//        
+//        // loop to rebuild each region
+//        for (int j = 0; j< regionTotalCount; j++){
+//            log("re-construct regionId:" +j);
+//            Region reconstructedRegion = matrix.get(j);
+//
+//            double [] enhancedY = generateEnhancedY(reconstructedRegion, imageTotalCount+featureDemCount);
+//            ArrayUtil.populate2DArrayByColumn(enhancedYMatrix,j,enhancedY);
+//        }
+//        
+//        double [][] solutionMatrixX = L1Fun.calcL1InBatch(enhancedA,enhancedYMatrix);
+//        ArrayUtil.print2DArray(solutionMatrixX);
+//        
+//        //write enhancedA & enhancedY to files
+////        String projectDirName = System.getProperty("user.dir");
+////        RegionMatrix.saveMatrixToFile(projectDirName + "/AMatrix.txt", enhancedA);
+////        RegionMatrix.saveMatrixToFile(projectDirName + "/YMatrix.txt", enhancedYMatrix);
+//    }
 
 
 }
