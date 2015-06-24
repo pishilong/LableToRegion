@@ -151,6 +151,7 @@ public class RegionMatrix {
             for(int i = -1; i <= 7; i++){
                 line = line + " "+r.labelHistogram.get(i);
             }
+            line = line + " " + r.getLabelId();
             hisWriter.write(line);
             hisWriter.write(System.lineSeparator());
         }
