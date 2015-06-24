@@ -3,11 +3,11 @@
 
 import com.mathworks.toolbox.javabuilder.MWException;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by lichaochen on 15/6/17.
@@ -26,10 +26,10 @@ public class RegionMatrix {
         String labelFileName = projectDirName + "/imageLabels.txt";
         Region.importImageLable(labelFileName, regions);
 
-        /*
-        String featureDirName = projectDirName + "/histogram";
-        Region.importFeature(featureDirName, regions);
-        */
+
+//        String featureDirName = projectDirName + "/histogram";
+//        Region.importFeature(featureDirName, regions);
+
         matrix.addAll(regions);
 
     }
@@ -38,27 +38,82 @@ public class RegionMatrix {
         int regionTotalCount = matrix.size();
 
         //  since we keep image/region order in matrix, so the image-id of last region is leveraged to get image count.
-        int imageTotalCount = matrix.get(matrix.size()-1).getImageId();
+        //  int imageTotalCount = matrix.get(matrix.size()-1).getImageId();
+
 
         int featureDemCount = matrix.get(matrix.size()-1).feature.size();
 
         List <Region>remainingRegions = new ArrayList<Region>();
+        HashMap<Double,Integer> knnMap = new HashMap<Double, Integer>();
+        List <Map.Entry<Double,Integer>> knnEntryList =new LinkedList<Map.Entry<Double, Integer>>();
+
         // loop to rebuild each region
         for (int j = 0; j< regionTotalCount; j++){
+            log("**************************************************************************************************" );
+            log("********************************************************" );
             log("re-construct regionId:" +j);
+            log("********************************************************" );
             Region reconstructedRegion = matrix.get(j);
 
             // re-use List of Remaining Regions
             remainingRegions.clear();
+            knnMap.clear();
+            knnEntryList.clear();
 
             for(int i = 0; i<regionTotalCount; i++){
                 if (i != j){
-                    remainingRegions.add(matrix.get(i));
+                    double dis= reconstructedRegion.getFeatureDistance(matrix.get(i));
+                    knnMap.put(dis , i);
                 }
             }
 
+            knnEntryList.addAll(knnMap.entrySet());
+
+            Collections.sort(knnEntryList, new Comparator< Map.Entry<Double,Integer>>() {
+
+                public int compare(Map.Entry<Double,Integer> firstMapEntry,
+                                   Map.Entry<Double,Integer>secondMapEntry) {
+                    return firstMapEntry.getKey().compareTo(secondMapEntry.getKey());
+                }
+            });
+            // knn, k = 1500
+            int K = 1500;
+            for (int i = 0; i <K; i++) {
+                int regionIndex = knnEntryList.get(i).getValue();
+                remainingRegions.add(matrix.get(regionIndex));
+            }
+
+
+//            for(int i = 0; i<regionTotalCount; i++){
+//                if (i != j){
+//                    remainingRegions.add(matrix.get(i));
+//                }
+//            }
+            Collections.sort(remainingRegions, new Comparator<Region>() {
+
+                        public int compare(Region firstRegion,
+                                           Region secondRegion) {
+
+                            if (firstRegion.imageId == secondRegion.imageId) {
+                                return ((Integer) firstRegion.regionId).compareTo(secondRegion.regionId);
+                            } else {
+                                return ((Integer) firstRegion.imageId).compareTo(secondRegion.imageId);
+                            }
+
+                        }
+                    }
+                );
+
+            TreeSet <Integer> imageIdSet = new TreeSet<Integer>();
+            for(Region r: remainingRegions){
+                imageIdSet.add(r.imageId);
+            }
+            int imageTotalCount = imageIdSet.size();
+
             double [][] enhancedA = generateEnhancedA(remainingRegions);
+
             double [] enhancedY = generateEnhancedY(reconstructedRegion, imageTotalCount+featureDemCount);
+
 //            log("enhanced A :");
 //            ArrayUtil.print2DArray(enhancedA);
 //            log("enhanced Y :");
@@ -70,8 +125,11 @@ public class RegionMatrix {
             double [] solutionX = L1Fun.calcL1(enhancedA,enhancedY);
             log("end - solve matrix eq" + df.format(new Date()));
 
-            ArrayUtil.printArray(solutionX);
+//          ArrayUtil.printArray(solutionX);
             List regionContributors = getContributorList(solutionX,remainingRegions);
+            log("********************************************************" );
+            log("region contributor count :"+regionContributors.size() );
+            log("********************************************************" );
             reconstructedRegion.labelPropagation(regionContributors);
         }
 
@@ -80,8 +138,24 @@ public class RegionMatrix {
         }
     }
 
-    public static void generateReport(){
+    public static void generateReport() throws IOException {
+
         log("generate report");
+
+        File hisFile = new File("regionLabel/regionLabel.his");
+        if(!hisFile.exists()) hisFile.createNewFile();
+        FileWriter hisWriter = new FileWriter(hisFile);
+
+        for ( Region r: matrix){
+             String line= r.imageId+","+r.regionId;
+            for(int i = -1; i <= 7; i++){
+                line = line + " "+r.labelHistogram.get(i);
+            }
+            hisWriter.write(line);
+            hisWriter.write(System.lineSeparator());
+        }
+
+        hisWriter.close();
     }
 
     public static List<Region> getContributorList ( double [] solutionX, List<Region> candidateRegions ){
@@ -98,9 +172,14 @@ public class RegionMatrix {
 
     }
 
-
     public static double[][] generateEnhancedA(List<Region> remainingRegions){
 
+
+        TreeSet <Integer> imageIdSet = new TreeSet<Integer>();
+        for(Region r: remainingRegions){
+            imageIdSet.add(r.imageId);
+        }
+        List <Integer>imageIdSeq = new ArrayList<Integer>(imageIdSet);
 
         // remaining region count
         int regionCount = remainingRegions.size();
@@ -109,7 +188,7 @@ public class RegionMatrix {
         int featureDemCount = remainingRegions.get(0).feature.size();
         log("featureDemCount :"+featureDemCount);
         // image count - since we keep image/region order in matrix, so the image-id of last region is leveraged.
-        int image_count =  remainingRegions.get(remainingRegions.size()-1).getImageId();
+        int image_count =  imageIdSeq.size();
         log("image_count :"+image_count);
 
         //array structure: (K+N, R+K+N)
@@ -120,15 +199,15 @@ public class RegionMatrix {
 
         int columnID = 0;
         // for first N(remaining region count) columns, 1 region is 1 column
-        log("Generating first N Columns which is (A+B) format");
+//        log("Generating first N Columns which is (A+B) format");
         for( ; columnID < regionCount; columnID++){
-            log("**** each region *****");
-            log("column id :"+columnID);
+//            log("**** each region *****");
+//            log("column id :"+columnID);
             // get empty column data
             Region eachRegion = remainingRegions.get(columnID);
-            log("region imageId :"+eachRegion.imageId);
-            log("region regionId :"+eachRegion.regionId);
-            log("region weight :"+eachRegion.weightInImage);
+//            log("region imageId :"+eachRegion.imageId);
+//            log("region regionId :"+eachRegion.regionId);
+//            log("region weight :"+eachRegion.weightInImage);
 
             double [] columnData = ArrayUtil.getColumnFrom2DArray(enhancedA, columnID);
 //            log("initial columndata : ");
@@ -142,7 +221,8 @@ public class RegionMatrix {
 
             // setup weight array
             double weightArray [] =  new double [image_count];
-            weightArray[eachRegion.imageId -1] = eachRegion.weightInImage;
+            int imageSeqNum = imageIdSeq.indexOf(eachRegion.imageId);
+            weightArray[imageSeqNum] = eachRegion.weightInImage;
 //            log("weight part columndata : ");
 //            ArrayUtil.printArray(weightArray);
 
@@ -230,8 +310,9 @@ public class RegionMatrix {
 //          testLabelPropagation();
 
         setupMatrix();
-        analyzeLabelToRegion();
+//        analyzeLabelToRegion();
         generateReport();
+
 
     }
 

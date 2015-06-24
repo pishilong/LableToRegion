@@ -57,11 +57,11 @@ public class L1Fun {
 	        y = new MWNumericArray(arrayY, MWClassID.DOUBLE);
 	        x0 = new MWNumericArray(arrayX0, MWClassID.DOUBLE);
 	
-	        System.out.println("A:");
+//	        System.out.println("A:");
 //	        System.out.println(A); 
-	        System.out.println("y:");
+//	        System.out.println("y:");
 //	        System.out.println(y); 
-	        System.out.println(Arrays.toString(inY));
+//	        System.out.println(Arrays.toString(inY));
 	        
 	        
 			String[] inputStructFields = {"init", "tFlag", "maxIter",
@@ -80,7 +80,7 @@ public class L1Fun {
 	        /*
 	         * [x1, funVal1, ValueL1]= LeastR(A, y, rho, opts);
 	         */
-			double rho = 0.0;
+			double rho = 0.059;
 			System.out.println("calculating LeastR, please wait.....");  
 	        l1result = l1norm.LeastR(1, A, y, rho, opts);
 //	        System.out.println("leastR result:");    
