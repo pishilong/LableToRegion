@@ -35,6 +35,18 @@ public class Region {
         this.weightInImage = weightInImage;
     }
 
+    public double getFeatureDistance(Region another){
+            double distance = 0;
+
+            for (int i = 0;  i< this.feature.size(); i++){
+                distance = distance+ (feature.get(i) - another.feature.get(i))*(feature.get(i) - another.feature.get(i));
+            }
+
+            distance = Math.sqrt(distance);
+
+        return distance;
+    }
+
     public void setFeature(List<Double> feature) {
         this.feature = feature;
     }
@@ -242,9 +254,6 @@ public class Region {
         this.labelId = highest_rank_label;
 
     }
-
-
-
 
 
     public static void main(String args[]) throws Exception{
