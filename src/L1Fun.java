@@ -1,11 +1,48 @@
 
 import com.mathworks.toolbox.javabuilder.*;  // MATLAB Java Builder
+
 import L1Norm.*;
 import l1magic.*;
+
 //import L1NormBatch.*;
 import java.util.*;
 
 public class L1Fun {
+	
+    L1Norm l1norm = null;
+//    L1eq l1eq = null;
+    MWNumericArray y = null;
+    MWNumericArray x0 = null;
+    MWNumericArray A = null;
+    MWStructArray opts = null;
+    double rho = 0;//default to zero
+    Object[] l1result = null;
+    Object[] l1result2 = null;
+    
+	double[] output = null;
+	
+	public void init() throws MWException{
+    	l1norm = new L1Norm();
+//    	l1eq = new L1eq();
+    	
+		String[] inputStructFields = {"init", "tFlag", "maxIter",
+				"nFlag", "rFlag", "mFlag", "lFlag"};
+		opts = new MWStructArray(1, 1, inputStructFields);
+		opts.set("init", 1, Integer.valueOf(2)); //% starting from a zero point
+		opts.set("tFlag", 1, Integer.valueOf(5));//% run .maxIter iterations
+		opts.set("maxIter", 1, Integer.valueOf(1000));//% maximum number of iterations
+		opts.set("nFlag", 1, Integer.valueOf(0));//% without normalization
+		opts.set("rFlag", 1, Integer.valueOf(0));//% when rFlag=1,the input parameter 'rho' is a ratio in (0, 1)
+		opts.set("mFlag", 1, Integer.valueOf(0));//% treating it as compositive function 
+		opts.set("lFlag", 1, Integer.valueOf(0));//% Nemirovski's line search
+		System.out.println("opts:");
+		System.out.println(opts);
+	}
+	
+	public void release(){
+        MWStructArray.disposeArray(opts);
+        l1norm.dispose();
+	}
 	
     /***********************************************************************
      * find L1Norm answers for equation Ax=y
@@ -15,36 +52,20 @@ public class L1Fun {
      * 
      * @return: array with double data array; data count:N
      * *********************************************************************/
-	public static double[] calcL1(double[][] inA, double[] inY) throws MWException{
+	public double[] calcL1(double[][] inA, double[] inY) throws MWException{
 		int M = inA.length;
 		int N = inA[0].length;
 		int yNum = inY.length;
 		
-		System.out.println(String.format("inA: %d * %d", M, N));
-		System.out.println(String.format("inY: %d", yNum));
+		System.out.println(String.format("inA: %d * %d inY:%d", M, N, yNum));
 		
 		if(yNum != M){
 			System.out.println(String.format("Matrix dimensions must agree! A.row:%d y.row:%d", M, yNum));
 			return null;
 		}
-
-        L1Norm l1norm = null;
-        L1eq l1eq = null;
-        MWNumericArray y = null;
-        MWNumericArray x0 = null;
-        MWNumericArray A = null;
-        MWStructArray opts = null;
-        Object[] l1result = null;
-        Object[] l1result2 = null;
-        
-		double[] output = null;
-        
+		
         try {
-        	l1norm = new L1Norm();
-        	l1eq = new L1eq();
-        	
         	output  = new double[N];   //final output
-        	//double[][] arrayA  = new double[M][N];//M rows!
             double[][] arrayY  = new double[M][1];//M rows!
             double[][] arrayX0 = new double[N][1];
 
@@ -60,42 +81,30 @@ public class L1Fun {
 	
 //	        System.out.println("A:");
 //	        System.out.println(A); 
-//	        System.out.println("y:");
-//	        System.out.println(y); 
-//	        System.out.println(Arrays.toString(inY));
-	        
-	        
-			String[] inputStructFields = {"init", "tFlag", "maxIter",
-					"nFlag", "rFlag", "mFlag", "lFlag"};
-			opts = new MWStructArray(1, 1, inputStructFields);
-			opts.set("init", 1, Integer.valueOf(2)); //% starting from a zero point
-			opts.set("tFlag", 1, Integer.valueOf(5));//% run .maxIter iterations
-			opts.set("maxIter", 1, Integer.valueOf(1000));//% maximum number of iterations
-			opts.set("nFlag", 1, Integer.valueOf(0));//% without normalization
-			opts.set("rFlag", 1, Integer.valueOf(0));//% when rFlag=1,the input parameter 'rho' is a ratio in (0, 1)
-			opts.set("mFlag", 1, Integer.valueOf(0));//% treating it as compositive function 
-			opts.set("lFlag", 1, Integer.valueOf(0));//% Nemirovski's line search
-			System.out.println("opts:");
-			System.out.println(opts); 
+	        System.out.println("y:");
+	        System.out.println(Arrays.toString(inY));
 
 	        /*
 	         * [x1, funVal1, ValueL1]= LeastR(A, y, rho, opts);
 	         */
-			double rho = 0.059;
+			rho = 0.05;
 			System.out.println("calculating LeastR, please wait.....");  
 	        l1result = l1norm.LeastR(1, A, y, rho, opts);
-//	        System.out.println("leastR result:");    
-//	        System.out.println(l1result[0]); 
 	        
 	        //get output to normal 1*N array
             MWNumericArray ma  = (MWNumericArray) l1result[0];
             Object[] array = ma.toArray(); 
             output = new double[array.length];
+            ArrayList<Integer> regionIndexes = new ArrayList<Integer>();
             for(int i = 0; i < array.length; i++){
               double[] a = (double[])array[i];
               output[i] = a[0];
+              if(output[i] > 0)
+            	  regionIndexes.add(i);
             }
-
+            System.out.println("leastR result:"); 
+            System.out.println(String.format("regions involved:%d", regionIndexes.size()));
+            System.out.println(Arrays.toString(output));
             
 //	        /*
 //	         * xp = l1eq_pd(x0, A, [], y, 1e-3);
@@ -124,9 +133,6 @@ public class L1Fun {
 	        MWArray.disposeArray(y);
 	        MWArray.disposeArray(l1result);
 	        MWArray.disposeArray(l1result2);
-	        MWStructArray.disposeArray(opts);
-	        l1norm.dispose();
-	        l1eq.dispose();
 	    }
         
         return output;

@@ -74,7 +74,9 @@ public class TestL1Norm {
 			 * 
 			 * @return: double [N] array
 			 * **************************************************************/
-	        double []x = L1Fun.calcL1(A, y);//Ax=y, find L1Norm result x
+	        L1Fun l1 = new L1Fun();
+	        l1.init();
+	        double []x = l1.calcL1(A, y);//Ax=y, find L1Norm result x
 	        
 	        //print output x 
 	        ArrayList<Integer> regionIndexes = new ArrayList<Integer>();

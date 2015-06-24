@@ -47,6 +47,10 @@ public class RegionMatrix {
         HashMap<Double,Integer> knnMap = new HashMap<Double, Integer>();
         List <Map.Entry<Double,Integer>> knnEntryList =new LinkedList<Map.Entry<Double, Integer>>();
 
+        
+        L1Fun l1fun = new L1Fun();
+        l1fun.init();
+        
         // loop to rebuild each region
         for (int j = 0; j< regionTotalCount; j++){
             log("**************************************************************************************************" );
@@ -77,7 +81,7 @@ public class RegionMatrix {
                 }
             });
             // knn, k = 1500
-            int K = 1500;
+            int K = 2000;
             for (int i = 0; i <K; i++) {
                 int regionIndex = knnEntryList.get(i).getValue();
                 remainingRegions.add(matrix.get(regionIndex));
@@ -122,7 +126,7 @@ public class RegionMatrix {
 
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             log("start - solve matrix eq" + df.format(new Date()));
-            double [] solutionX = L1Fun.calcL1(enhancedA,enhancedY);
+            double [] solutionX = l1fun.calcL1(enhancedA,enhancedY);
             log("end - solve matrix eq" + df.format(new Date()));
 
 //          ArrayUtil.printArray(solutionX);
