@@ -1,0 +1,42 @@
+   <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Label To Region Result Presentation</h1>
+        <p>爬雪山，过草地</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th width="20px">序号</th>
+            <th>原图</th>
+            <th>结果图</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% @original_images.each_with_index do |origin_image, index| %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td><%= image_tag(origin_image) %></td>
+            <td>
+              <%= image_tag(@labeled_images[index]) %>
+              <div class="pull-right">
+              <% RegionLabel::COLOR_SETTING.each do |label_id, color| %>
+                <div style="background-color:rgb(<%= color.gsub(" ", ",") %>)" class="color-setting"><%= RegionLabel::LABEL_TEXT[label_id] %></div>
+              <% end %>
+            </div>
+            </td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+
+      <hr>
+
+      <footer>
+        <p>&copy; 一起来吧group </p>
+      </footer>
+    </div> <!-- /container -->
