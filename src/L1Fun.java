@@ -87,7 +87,7 @@ public class L1Fun {
 	        /*
 	         * [x1, funVal1, ValueL1]= LeastR(A, y, rho, opts);
 	         */
-			rho = 0.025;
+			rho = 0.022;
 			System.out.println("calculating LeastR, please wait.....");  
 	        l1result = l1norm.LeastR(1, A, y, rho, opts);
 	        

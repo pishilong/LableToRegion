@@ -52,8 +52,8 @@ public class RegionMatrix {
         l1fun.init();
         
         // loop to rebuild each region
-//        for (int j = 0; j< regionTotalCount; j++){
-            for (int j = 0; j< 20; j++){
+        for (int j = 0; j< regionTotalCount; j++){
+//            for (int j = 0; j< 20; j++){
             log("**************************************************************************************************" );
             log("********************************************************" );
             log("re-construct regionId:" +j);
