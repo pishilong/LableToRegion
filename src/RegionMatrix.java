@@ -52,7 +52,8 @@ public class RegionMatrix {
         l1fun.init();
         
         // loop to rebuild each region
-        for (int j = 0; j< regionTotalCount; j++){
+//        for (int j = 0; j< regionTotalCount; j++){
+            for (int j = 0; j< 20; j++){
             log("**************************************************************************************************" );
             log("********************************************************" );
             log("re-construct regionId:" +j);
@@ -81,7 +82,7 @@ public class RegionMatrix {
                 }
             });
             // knn, k = 1500
-            int K = 2000;
+            int K =800;
             for (int i = 0; i <K; i++) {
                 int regionIndex = knnEntryList.get(i).getValue();
                 remainingRegions.add(matrix.get(regionIndex));
@@ -131,10 +132,11 @@ public class RegionMatrix {
 
 //          ArrayUtil.printArray(solutionX);
             List regionContributors = getContributorList(solutionX,remainingRegions);
+
+            reconstructedRegion.labelPropagation(regionContributors);
             log("********************************************************" );
             log("region contributor count :"+regionContributors.size() );
             log("********************************************************" );
-            reconstructedRegion.labelPropagation(regionContributors);
         }
 
             for(Region r : matrix){
@@ -170,6 +172,7 @@ public class RegionMatrix {
 
         for(int i = 0; i < regionCount; i++){
             if(solutionX[i] != 0){
+                candidateRegions.get(i).contribute = solutionX[i];
                 contributors.add(candidateRegions.get(i));
             }
         }
@@ -342,10 +345,10 @@ public class RegionMatrix {
 
     public static void initalLabel(Region r, int [] labels){
         for(int i = -1; i<= 7; i++){
-            r.labelHistogram.put(i,0);
+            r.labelHistogram.put(i,0d);
         }
         for(int labelId : labels){
-            r.labelHistogram.put(labelId,1);
+            r.labelHistogram.put(labelId,1d);
         }
 
     }
@@ -411,7 +414,7 @@ public class RegionMatrix {
         int[] l1= {1, 3, 5};
         initalLabel(r5,l1);
         randomFeature(r5.feature,100);
-        r5.addLabel(3);
+        r5.addLabel(3, 1.0);
         r5.selectLabel();
 
 //        List <Region> list = testMatrix();

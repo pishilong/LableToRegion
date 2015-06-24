@@ -81,13 +81,13 @@ public class L1Fun {
 	
 //	        System.out.println("A:");
 //	        System.out.println(A); 
-	        System.out.println("y:");
-	        System.out.println(Arrays.toString(inY));
+//	        System.out.println("y:");
+//	        System.out.println(Arrays.toString(inY));
 
 	        /*
 	         * [x1, funVal1, ValueL1]= LeastR(A, y, rho, opts);
 	         */
-			rho = 0.05;
+			rho = 0.025;
 			System.out.println("calculating LeastR, please wait.....");  
 	        l1result = l1norm.LeastR(1, A, y, rho, opts);
 	        
@@ -102,9 +102,9 @@ public class L1Fun {
               if(output[i] > 0)
             	  regionIndexes.add(i);
             }
-            System.out.println("leastR result:"); 
-            System.out.println(String.format("regions involved:%d", regionIndexes.size()));
-            System.out.println(Arrays.toString(output));
+//            System.out.println("leastR result:");
+//            System.out.println(String.format("regions involved:%d", regionIndexes.size()));
+//            System.out.println(Arrays.toString(output));
             
 //	        /*
 //	         * xp = l1eq_pd(x0, A, [], y, 1e-3);

@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -16,6 +15,8 @@ public class Region {
     /* weight: region size percentage in image */
     double weightInImage;
 
+    double contribute;
+
     /* final label ID, after label selection using label histogram*/
     int labelId;
 
@@ -23,7 +24,7 @@ public class Region {
     List<Double> feature = new ArrayList<Double>();
 
     /*Label Histogram, structure <labelId, counter>, used for label propagation phase*/
-    Map <Integer, Integer> labelHistogram = new HashMap<Integer, Integer>();
+    Map<Integer, Double> labelHistogram = new HashMap<Integer, Double>();
 
 
     public Region(){
@@ -64,14 +65,14 @@ public class Region {
 
         for (int i = 0; i < files.length; i ++){
             String fileName = files[i].getName();
-            //杩囨护闅愯棌鏂囦欢
+            //过滤隐藏文件
             if (fileName.endsWith("mask")) {
                 filelist.add(files[i]);
             }
         }
         System.out.println("Total " + filelist.size() + "mask files.");
 
-        //鎸夋枃浠跺悕锛堝浘鍍忓悕锛夋帓搴�
+        //按文件名（图像名）排序
         Collections.sort(filelist, new Comparator<File>(){
             @Override
             public int compare(File o1, File o2) {
@@ -172,19 +173,21 @@ public class Region {
             while ((line = bufferedReader.readLine()) != null) {
                 imageID ++;
                 System.out.println("Processing image " + imageID + "'s label....." );
-                Map <Integer, Integer> labelHistogram = new HashMap<Integer, Integer>();
+                Map <Integer, Double> labelHistogram = new HashMap<Integer, Double>();
                 String[] labels = line.split(" ");
                 for (String labelID : labels){
-                    labelHistogram.put(Integer.parseInt(labelID), 1);
+                    labelHistogram.put(Integer.parseInt(labelID), 1d);
                 }
                 for(int i = -1; i < 8; i ++){
                     if (labelHistogram.get(i) == null) {
-                        labelHistogram.put(i, 0);
+                        labelHistogram.put(i, 0d);
                     }
                 }
                 for (Region region: regions) {
                     if (region.getImageId() == imageID) {
-                        region.setLabelHistogram(new HashMap<Integer, Integer>(labelHistogram));
+                       // region.setLabelHistogram(labelHistogram);
+                        region.setLabelHistogram(new HashMap<Integer, Double>(labelHistogram));
+
                     }
                 }
             }
@@ -212,25 +215,36 @@ public class Region {
         return labelId;
     }
 
-    public void setLabelHistogram(Map<Integer, Integer> labelHistogram) {
+    public void setLabelHistogram(Map<Integer, Double> labelHistogram) {
         this.labelHistogram = labelHistogram;
     }
 
     public void labelPropagation(List <Region> contributors){
+
+
         for (Integer label_id : this.labelHistogram.keySet()){
+            double eachLabelContributeFromOthers = 0;
+
             for (Region contributor : contributors){
                 if (isCommonLabel(label_id, contributor)){
-                    this.addLabel(label_id);
-                    contributor.addLabel(label_id);
+                    //        update others
+                    contributor.addLabel(label_id, contributor.contribute);
+                    eachLabelContributeFromOthers = eachLabelContributeFromOthers+ contributor.contribute*contributor.weightInImage;
                 }
+
             }
+            //        update myself
+            this.addLabel(label_id,eachLabelContributeFromOthers);
         }
+
+
+
     }
 
-    public void addLabel(Integer label_id){
-        int label_count = this.labelHistogram.get(label_id);
+    public void addLabel(Integer label_id, Double contribute){
+        Double label_count = this.labelHistogram.get(label_id);
 
-        this.labelHistogram.put(label_id, label_count + 1);
+        this.labelHistogram.put(label_id, label_count + contribute);
     }
 
     public boolean isLabelContained(Integer label_id){
@@ -242,7 +256,7 @@ public class Region {
     }
 
     public void selectLabel(){
-        int max_count = 0;
+        Double max_count = 0d;
         int highest_rank_label=0;
         for(int eachLabel : this.labelHistogram.keySet()){
             if (this.labelHistogram.get(eachLabel) > max_count) {
