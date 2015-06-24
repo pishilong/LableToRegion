@@ -133,9 +133,9 @@ public class RegionMatrix {
             reconstructedRegion.labelPropagation(regionContributors);
         }
 
-        for(Region r : matrix){
-            r.selectLabel();
-        }
+            for(Region r : matrix){
+                r.selectLabel();
+            }
     }
 
     public static void generateReport() throws IOException {
@@ -310,7 +310,7 @@ public class RegionMatrix {
 //          testLabelPropagation();
 
         setupMatrix();
-//        analyzeLabelToRegion();
+        analyzeLabelToRegion();
         generateReport();
 
 
