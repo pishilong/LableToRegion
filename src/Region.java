@@ -257,7 +257,7 @@ public class Region {
 
     public void selectLabel(){
         Double max_count = 0d;
-        int highest_rank_label=0;
+        int highest_rank_label=-1;
         for(int eachLabel : this.labelHistogram.keySet()){
             if (this.labelHistogram.get(eachLabel) > max_count) {
                 max_count =this.labelHistogram.get(eachLabel);
