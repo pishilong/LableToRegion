@@ -64,14 +64,14 @@ public class Region {
 
         for (int i = 0; i < files.length; i ++){
             String fileName = files[i].getName();
-            //过滤隐藏文件
+            //杩囨护闅愯棌鏂囦欢
             if (fileName.endsWith("mask")) {
                 filelist.add(files[i]);
             }
         }
         System.out.println("Total " + filelist.size() + "mask files.");
 
-        //按文件名（图像名）排序
+        //鎸夋枃浠跺悕锛堝浘鍍忓悕锛夋帓搴�
         Collections.sort(filelist, new Comparator<File>(){
             @Override
             public int compare(File o1, File o2) {
@@ -184,7 +184,7 @@ public class Region {
                 }
                 for (Region region: regions) {
                     if (region.getImageId() == imageID) {
-                        region.setLabelHistogram(labelHistogram);
+                        region.setLabelHistogram(new HashMap<Integer, Integer>(labelHistogram));
                     }
                 }
             }
