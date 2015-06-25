@@ -228,7 +228,7 @@ public class Region {
             for (Region contributor : contributors){
                 if (isCommonLabel(label_id, contributor)){
                     //        update others
-                    contributor.addLabel(label_id, contributor.contribute);
+                    contributor.addLabel(label_id, contributor.contribute*this.weightInImage);
                     eachLabelContributeFromOthers = eachLabelContributeFromOthers+ contributor.contribute*contributor.weightInImage;
                 }
 
