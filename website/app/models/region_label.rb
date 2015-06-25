@@ -49,16 +49,22 @@ class RegionLabel
         puts "Processing image #{image_id}"
         next if File.exist?(File.join(Rails.root, 'public', 'regionLabel', "#{image_id}.l2r")) && !force
 
-        image_region_labels = region_labels.select{|rl| rl.image_id == image_id}
+        image_region_labels = region_labels.select{|rl| rl.image_id == image_id}.sort_by{|x| x.region_id.to_i}.reverse
         mask_file = File.read(File.join(Rails.root, 'public', 'mask', "#{image_id}.mask"))
         l2r_file = File.open(File.join(Rails.root, 'public', 'regionLabel', "#{image_id}.l2r"), "w")
-        image_region_labels.each do |rl|
-          mask_file.gsub!(rl.region_id.to_s, "region_#{rl.region_id.to_s}" )
+        buffer = []
+        mask_file.split("\n").each do |line|
+          image_region_labels.each do |rl|
+            line = line.split(" ").map{|x|  x == rl.region_id.to_s ? "region_#{rl.region_id.to_s}" : x}.join(" ")
+          end
+          buffer << line
+          buffer << "\n"
         end
+        buffer = buffer.join("")
         image_region_labels.each do |rl|
-          mask_file.gsub!("region_#{rl.region_id.to_s}", rl.label_id.to_s )
+          buffer.gsub!("region_#{rl.region_id.to_s}", rl.label_id.to_s )
         end
-        l2r_file << mask_file
+        l2r_file << buffer
         l2r_file.close
       end
     end
