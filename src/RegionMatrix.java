@@ -44,8 +44,8 @@ public class RegionMatrix {
         int featureDemCount = matrix.get(matrix.size()-1).feature.size();
 
         List <Region>remainingRegions = new ArrayList<Region>();
-        HashMap<Double,Integer> knnMap = new HashMap<Double, Integer>();
-        List <Map.Entry<Double,Integer>> knnEntryList =new LinkedList<Map.Entry<Double, Integer>>();
+        HashMap<Integer, Double> knnMap = new HashMap<Integer, Double>();
+        List <Map.Entry<Integer,Double>> knnEntryList =new LinkedList<Map.Entry<Integer, Double>>();
 
         
         L1Fun l1fun = new L1Fun();
@@ -67,24 +67,25 @@ public class RegionMatrix {
 
             for(int i = 0; i<regionTotalCount; i++){
                 if (i != j){
-                    double dis= reconstructedRegion.getFeatureDistance(matrix.get(i));
-                    knnMap.put(dis , i);
+                    double dis= reconstructedRegion.getSim(matrix.get(i));
+                    knnMap.put(i , dis);
                 }
             }
 
             knnEntryList.addAll(knnMap.entrySet());
 
-            Collections.sort(knnEntryList, new Comparator< Map.Entry<Double,Integer>>() {
+            Collections.sort(knnEntryList, Collections.reverseOrder(
+                    new Comparator< Map.Entry<Integer,Double>>() {
 
-                public int compare(Map.Entry<Double,Integer> firstMapEntry,
-                                   Map.Entry<Double,Integer>secondMapEntry) {
-                    return firstMapEntry.getKey().compareTo(secondMapEntry.getKey());
+                public int compare(Map.Entry<Integer,Double> firstMapEntry,
+                                   Map.Entry<Integer,Double>secondMapEntry) {
+                    return firstMapEntry.getValue().compareTo(secondMapEntry.getValue());
                 }
-            });
+            }));
             // knn, k = 1500
-            int K =800;
+            int K = 1000;
             for (int i = 0; i <K; i++) {
-                int regionIndex = knnEntryList.get(i).getValue();
+                int regionIndex = knnEntryList.get(i).getKey();
                 remainingRegions.add(matrix.get(regionIndex));
             }
 
@@ -139,7 +140,7 @@ public class RegionMatrix {
             log("********************************************************" );
 
             //generate report on finishing every 100 regions
-            if (j%100 == 0) {
+            if (j%20 == 0) {
                 for(Region r : matrix){
                     r.selectLabel();
                 }

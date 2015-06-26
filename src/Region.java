@@ -48,6 +48,39 @@ public class Region {
         return distance;
     }
 
+    // 求余弦相似度
+    public double getSim(Region another) {
+        double result = 0;
+        result = pointMulti(this.feature, another.feature) / sqrtMulti(this.feature, another.feature);
+
+        return result;
+    }
+
+    private double sqrtMulti(List<Double> vector1, List<Double> vector2) {
+        double result = 0;
+        result = squares(vector1) * squares(vector2);
+        result = Math.sqrt(result);
+        return result;
+    }
+
+    // 求平方和
+    private double squares(List<Double> vector) {
+        double result = 0;
+        for (Double integer : vector) {
+            result += integer * integer;
+        }
+        return result;
+    }
+
+    // 点乘法
+    private double pointMulti(List<Double> vector1, List<Double> vector2) {
+        double result = 0;
+        for (int i = 0; i < vector1.size(); i++) {
+            result += vector1.get(i) * vector2.get(i);
+        }
+        return result;
+    }
+
     public void setFeature(List<Double> feature) {
         this.feature = feature;
     }
