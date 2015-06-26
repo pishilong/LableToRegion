@@ -137,11 +137,24 @@ public class RegionMatrix {
             log("********************************************************" );
             log("region contributor count :"+regionContributors.size() );
             log("********************************************************" );
+
+            //generate report on finishing every 100 regions
+            if (j%100 == 0) {
+                for(Region r : matrix){
+                    r.selectLabel();
+                }
+
+                try {
+                    generateReport();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
-            for(Region r : matrix){
-                r.selectLabel();
-            }
+        for(Region r : matrix){
+            r.selectLabel();
+        }
     }
 
     public static void generateReport() throws IOException {
