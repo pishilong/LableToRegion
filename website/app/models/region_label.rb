@@ -36,11 +36,17 @@ class RegionLabel
           region_label.image_id = elements[0].split(",")[0].to_i
           region_label.region_id = elements[0].split(",")[1].to_i
           region_label.label_id = elements.last.to_i
+          region_label.label_id = 7 if foreground?(elements)
           region_labels << region_label
         end
       end
 
       region_labels
+    end
+
+    def foreground?(elements)
+      return true if elements[1,9].all?{|x| x.to_f == 1.0e-10 || x.to_f == 0}
+      false
     end
 
     def check_l2r(region_labels, force = false, dummy = false)
