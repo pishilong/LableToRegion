@@ -176,7 +176,12 @@ public class Region {
                 Map <Integer, Double> labelHistogram = new HashMap<Integer, Double>();
                 String[] labels = line.split(" ");
                 for (String labelID : labels){
-                    labelHistogram.put(Integer.parseInt(labelID), 1d);
+                    if (Integer.parseInt(labelID) == 7){
+                        labelHistogram.put(Integer.parseInt(labelID), 0d);
+                    }else{
+                        labelHistogram.put(Integer.parseInt(labelID), Math.pow(10,-10));
+                    }
+
                 }
                 for(int i = -1; i < 8; i ++){
                     if (labelHistogram.get(i) == null) {
