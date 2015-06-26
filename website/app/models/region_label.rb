@@ -15,13 +15,13 @@ class RegionLabel
   LABEL_TEXT = {
     "-1" => "Unknown",
     "0" => "Sky",
-    "1" => "Plant",
+    "1" => "Tree",
     "2" => "Road",
     "3" => "Grass",
     "4" => "Water",
     "5" => "Building",
     "6" => "Mountain",
-    "7" => "Object"
+    "7" => "foreground"
   }
 
   class << self
@@ -42,8 +42,9 @@ class RegionLabel
       region_labels
     end
 
-    def check_l2r(region_labels, force = false)
+    def check_l2r(region_labels, force = false, dummy = false)
       image_ids = region_labels.map{|x| x.image_id}.sort.uniq
+      image_ids = (1 .. 5).to_a if dummy
 
       image_ids.each do |image_id|
         puts "Processing image #{image_id}"
@@ -69,9 +70,10 @@ class RegionLabel
       end
     end
 
-    def check_labeled_images(region_labels, force = false)
+    def check_labeled_images(region_labels, force = false, dummy = false)
 
       image_ids = region_labels.map{|x| x.image_id}.sort.uniq
+      image_ids = (1 .. 5).to_a if dummy
 
       image_ids.each do |image_id|
         puts "Processing image #{image_id}"

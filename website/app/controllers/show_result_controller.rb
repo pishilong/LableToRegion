@@ -2,8 +2,8 @@ class ShowResultController < ApplicationController
 
   def index
     @region_labels = RegionLabel.load_from_file
-    RegionLabel.check_l2r(@region_labels)
-    RegionLabel.check_labeled_images(@region_labels)
+    RegionLabel.check_l2r(@region_labels, false, true)
+    RegionLabel.check_labeled_images(@region_labels, false, true)
     @original_images = load_original_images
     @labeled_images = load_labled_images
   end

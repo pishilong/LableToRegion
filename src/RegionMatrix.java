@@ -161,7 +161,7 @@ public class RegionMatrix {
 
         log("generate report");
 
-        File hisFile = new File("regionLabel/regionLabel.his");
+        File hisFile = new File("website/public/regionLabel/regionLabel.his");
         if(!hisFile.exists()) hisFile.createNewFile();
         FileWriter hisWriter = new FileWriter(hisFile);
 
