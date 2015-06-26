@@ -185,7 +185,7 @@ public class RegionMatrix {
         List<Region> contributors = new ArrayList<Region>();
 
         for(int i = 0; i < regionCount; i++){
-            if(solutionX[i] != 0){
+            if(solutionX[i] > 0){
                 candidateRegions.get(i).contribute = solutionX[i];
                 contributors.add(candidateRegions.get(i));
             }

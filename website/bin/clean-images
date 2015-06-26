@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+system "rm public/regionLabel/*.l2r"
+system "rm app/assets/images/labled/*.ppm"
+system "rm app/assets/images/labled/*.jpg"
+
