@@ -2,6 +2,7 @@
 import com.mathworks.toolbox.javabuilder.*;  // MATLAB Java Builder
 
 import L1Norm.*;
+//import L1NormNN.*; //non-negative contrained version
 import l1magic.*;
 
 //import L1NormBatch.*;
@@ -10,6 +11,7 @@ import java.util.*;
 public class L1Fun {
 	
     L1Norm l1norm = null;
+//    L1NormNN l1norm = null;
 //    L1eq l1eq = null;
     MWNumericArray y = null;
     MWNumericArray x0 = null;
@@ -23,6 +25,7 @@ public class L1Fun {
 	
 	public void init() throws MWException{
     	l1norm = new L1Norm();
+//		l1norm = new L1NormNN();
 //    	l1eq = new L1eq();
     	
 		String[] inputStructFields = {"init", "tFlag", "maxIter",
@@ -90,7 +93,8 @@ public class L1Fun {
 			rho = 0.022;
 			System.out.println("calculating LeastR, please wait.....");  
 	        l1result = l1norm.LeastR(1, A, y, rho, opts);
-	        
+//	        l1result = l1norm.nnLeastR(1, A, y, rho, opts);//non-negative constraint
+
 	        //get output to normal 1*N array
             MWNumericArray ma  = (MWNumericArray) l1result[0];
             Object[] array = ma.toArray(); 
