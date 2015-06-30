@@ -53,7 +53,6 @@ public class RegionMatrix {
         
         // loop to rebuild each region
         for (int j = 0; j< regionTotalCount; j++){
-//            for (int j = 0; j< 20; j++){
             log("**************************************************************************************************" );
             log("********************************************************" );
             log("re-construct regionId:" +j);
@@ -279,7 +278,8 @@ public class RegionMatrix {
             double [] columnData = ArrayUtil.getColumnFrom2DArray(enhancedA, columnID );
 
             for (int i =0; i<featureDemCount; i++){
-                columnData[i] = 1;
+                if(id_nextK -1 == i)
+                    columnData[i] = 1;
             }
 
 //            log("column data (1 0)");
@@ -296,7 +296,8 @@ public class RegionMatrix {
             double [] columnData = ArrayUtil.getColumnFrom2DArray(enhancedA, columnID);
 
             for (int i = featureDemCount; i<columnData.length; i++){
-                columnData[i] = -1;
+                if(id_nextN + featureDemCount -1 == i)
+                    columnData[i] = -1;
             }
 //            log("column data (0 -1)");
 //            ArrayUtil.printArray(columnData);
