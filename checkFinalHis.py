@@ -156,10 +156,10 @@ for fileIndex in range(1, len(myTotalResultList.keys())+1):
 		mostCorrectFileIndex = fileIndex;
 	print "========file:%d.jpg correct percentage:%f========" %(fileIndex, fileCorrectRate);
 			
-for regionI in labelAccuracyMap.keys():
-	regionICount = labelAccuracyMap[regionI]['total']
-	regionICorrect = labelAccuracyMap[regionI]['correct']
-	print '# %s label accurary:%f' %(regionI, float(regionICorrect)/regionICount)
+for labelI in labelAccuracyMap.keys():
+	labelICount = labelAccuracyMap[labelI]['total']
+	labelICorrect = labelAccuracyMap[labelI]['correct']
+	print '# %s label accurary:%f (%d/%d)' %(labelI, float(labelICorrect)/labelICount,labelICorrect,labelICount)
 
 print "The most correct file:%d.jpg correct percentage:%f" %(mostCorrectFileIndex, mostCorrectFileRate);
 
