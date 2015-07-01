@@ -104,6 +104,7 @@ print '====================================================================='
 
 
 #compare with our result with references
+labelAccuracyMap = {}
 mostCorrectFileRate = 0.0;
 mostCorrectFileIndex = -1;
 for fileIndex in range(1, len(myTotalResultList.keys())+1):
@@ -121,12 +122,30 @@ for fileIndex in range(1, len(myTotalResultList.keys())+1):
 	for regionId in fileLabelMappingDictRef.keys():
 		str = 'processing key %s in image%s' %(regionId, fileIndex);
 		labelsCount_total = labelsCount_total+1;
-		if fileLabelMappingDictRef[regionId] == fileLabelMappingDictTest[regionId]:
+
+		resultLabel = fileLabelMappingDictRef[regionId]
+		targetLabel = fileLabelMappingDictTest[regionId]
+		correct = (resultLabel == targetLabel)
+		if correct:
 			str += " correct!"
 			#total correct count +1
 			labelsCount_correct = labelsCount_correct+1;
 			#file correct count +1
 			fileLabelCorrectCount += 1;
+
+		#update label based accuray data 
+		if labelAccuracyMap.has_key(targetLabel) == 0:
+			labelAccuracyMap[targetLabel] = {'total':0, 'correct':0}
+		if labelAccuracyMap.has_key(resultLabel) == 0:
+			labelAccuracyMap[resultLabel] = {'total':0, 'correct':0}
+		currLabelData = labelAccuracyMap[targetLabel]
+		if correct:
+			currLabelData['total'] = currLabelData['total'] + 1
+			currLabelData['correct'] = currLabelData['correct'] + 1
+		else:
+			anotherLabelData = labelAccuracyMap[resultLabel]
+			anotherLabelData['total'] = anotherLabelData['total'] + 1
+
 
 		print str;
 
@@ -137,10 +156,14 @@ for fileIndex in range(1, len(myTotalResultList.keys())+1):
 		mostCorrectFileIndex = fileIndex;
 	print "========file:%d.jpg correct percentage:%f========" %(fileIndex, fileCorrectRate);
 			
+for regionI in labelAccuracyMap.keys():
+	regionICount = labelAccuracyMap[regionI]['total']
+	regionICorrect = labelAccuracyMap[regionI]['correct']
+	print '# %s label accurary:%f' %(regionI, float(regionICorrect)/regionICount)
 
 print "The most correct file:%d.jpg correct percentage:%f" %(mostCorrectFileIndex, mostCorrectFileRate);
 
-print "TotalLables:%d correctLables:%d total correct percentage:%f" %(labelsCount_total, labelsCount_correct, 
+print "TotalLabels:%d correctLabels:%d total correct percentage:%f" %(labelsCount_total, labelsCount_correct, 
 float(labelsCount_correct)/float(labelsCount_total));	
 
 
